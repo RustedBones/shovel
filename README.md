@@ -1,2 +1,3 @@
 # shovel
-Dig implementation for Scala
+
+Dig implementation for scala
