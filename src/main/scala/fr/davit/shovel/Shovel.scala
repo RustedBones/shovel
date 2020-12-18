@@ -16,12 +16,13 @@
 
 package fr.davit.shovel
 
-import cats.effect.{Blocker, ExitCode, IO, Resource, Sync}
+import cats.effect._
 import cats.implicits._
 import com.monovore.decline._
 import com.monovore.decline.effect._
+import fr.davit.shovel.Shows._
 import fr.davit.taxonomy.fs2.{Dns, DnsPacket}
-import fr.davit.taxonomy.model.record.{DnsARecordData, DnsRecordClass, DnsRecordType, DnsResourceRecord}
+import fr.davit.taxonomy.model.record.{DnsRecordClass, DnsRecordType, DnsResourceRecord}
 import fr.davit.taxonomy.model.{DnsMessage, DnsQuestion}
 import fr.davit.taxonomy.scodec.DnsCodec
 import fs2.io.udp.SocketGroup
@@ -49,6 +50,30 @@ object Shovel extends CommandIOApp(name = "shovel", header = "") {
     DnsPacket(server, message)
   }
 
+  def printQuestions(questions: Seq[DnsQuestion]): Unit = {
+    if (questions.nonEmpty) {
+      println("\nQUESTION SECTION:")
+      questions.foreach(q => println(s"\t${q.show}"))
+    }
+  }
+
+  def printSection(section: String, records: Seq[DnsResourceRecord]): Unit = {
+    if (records.nonEmpty) {
+      println(s"\n$section SECTION:")
+      records.foreach(r => println(s"\t${r.show}"))
+    }
+  }
+
+  def printResult[F[_]: Sync](response: DnsMessage): F[Unit] =
+    for {
+      _ <- Sync[F].delay(println("Got answer:"))
+      _ <- Sync[F].delay(println(response.header.show))
+      _ <- Sync[F].delay(printQuestions(response.questions))
+      _ <- Sync[F].delay(printSection("ANSWERS", response.answers))
+      _ <- Sync[F].delay(printSection("AUTHORITIES", response.authorities))
+      _ <- Sync[F].delay(printSection("ADDITIONAL", response.additionals))
+    } yield ()
+
   override def main: Opts[IO[ExitCode]] = nameOpts.map { name =>
     val resources = for {
       resolver    <- systemResolver[IO]()
@@ -64,10 +89,7 @@ object Shovel extends CommandIOApp(name = "shovel", header = "") {
           response <- servers.foldLeft(IO.raiseError[DnsMessage](new Exception("No DNS server provided"))) {
             case (result, server) => result.orElse(Dns.resolve(socket, query(server, name)))
           }
-          _ <- response.answers.toList.traverse {
-            case DnsResourceRecord(`name`, _, _, _, DnsARecordData(ip)) => IO(println(ip))
-            case other                                                  => IO(println(other))
-          }
+          _ <- printResult[IO](response)
         } yield ExitCode.Success
     }
   }
