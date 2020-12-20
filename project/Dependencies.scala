@@ -5,7 +5,7 @@ object Dependencies {
   object Versions {
     val Decline   = "1.3.0"
     val ScalaTest = "3.2.2"
-    val Taxonomy  = "0.1.0"
+    val Taxonomy  = "0.2.0"
   }
 
   val Decline  = "com.monovore" %% "decline-effect" % Versions.Decline
