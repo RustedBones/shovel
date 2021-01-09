@@ -35,11 +35,7 @@ object Shows {
     val flags = (qr ++ tv ++ rd ++ ra ++ aa).mkString(" ")
 
     s"->>HEADER<<- opcode: $opCode, status: $responseCode, id: $id\n" +
-      s"flags: $flags, " +
-      s"QUERY: $countQuestions, " +
-      s"ANSWER: $countAnswerRecords, " +
-      s"AUTHORITY: $countAuthorityRecords, " +
-      s"ADDITIONAL: $countAdditionalRecords\n\n"
+      s"flags: $flags"
   }
 
   implicit val showClass: Show[DnsRecordClass] = Show.show {
@@ -67,6 +63,14 @@ object Shows {
     s"$name\t${ttl.toSeconds}\t${`class`.show}\t${data.`type`.show}\t${data.show}"
   }
 
+  def header(message: DnsMessage): String = {
+    message.header.show ++
+      s", QUERY: ${message.questions.size}" +
+      s", ANSWER: ${message.answers.size}" +
+      s", AUTHORITY: ${message.authorities.size}" +
+      s", ADDITIONAL: ${message.additionals.size}\n\n"
+  }
+
   def question(questions: Seq[DnsQuestion]): String = {
     if (questions.isEmpty) {
       ""
@@ -88,7 +92,7 @@ object Shows {
   }
 
   implicit val showMessage: Show[DnsMessage] = Show.show { message =>
-    message.header.show +
+    header(message) +
       question(message.questions) +
       section("ANSWERS", message.answers) +
       section("AUTHORITIES", message.authorities) +

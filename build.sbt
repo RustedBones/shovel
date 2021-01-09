@@ -45,7 +45,6 @@ lazy val `shovel` = (project in file("."))
   .settings(
     libraryDependencies ++= Seq(
       Dependencies.Decline,
-      Dependencies.Taxonomy,
-      Dependencies.Test.ScalaTest
+      Dependencies.Taxonomy
     )
   )
