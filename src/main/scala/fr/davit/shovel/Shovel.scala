@@ -52,8 +52,8 @@ object Shovel extends CommandIOApp(name = "shovel", header = "") {
 
   override def main: Opts[IO[ExitCode]] = nameOpts.map { name =>
     val resources = for {
-      resolver    <- systemResolver[IO]()
-      socket      <- Network[IO].openDatagramSocket()
+      resolver <- systemResolver[IO]()
+      socket   <- Network[IO].openDatagramSocket()
     } yield (resolver, socket)
 
     resources.use {
