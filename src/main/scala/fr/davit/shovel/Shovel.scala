@@ -25,7 +25,7 @@ import fr.davit.taxonomy.fs2.Dns
 import fr.davit.taxonomy.model.record.{DnsRecordClass, DnsRecordType}
 import fr.davit.taxonomy.model.{DnsMessage, DnsPacket, DnsQuestion}
 import fr.davit.taxonomy.scodec.DnsCodec
-import fs2.io.udp.SocketGroup
+import fs2.io.net.Network
 import scodec.Codec
 import sun.net.dns.ResolverConfiguration
 
@@ -53,9 +53,7 @@ object Shovel extends CommandIOApp(name = "shovel", header = "") {
   override def main: Opts[IO[ExitCode]] = nameOpts.map { name =>
     val resources = for {
       resolver    <- systemResolver[IO]()
-      blocker     <- Blocker[IO]
-      socketGroup <- SocketGroup[IO](blocker)
-      socket      <- socketGroup.open[IO]()
+      socket      <- Network[IO].openDatagramSocket()
     } yield (resolver, socket)
 
     resources.use {
