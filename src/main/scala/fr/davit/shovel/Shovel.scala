@@ -32,7 +32,7 @@ import sun.net.dns.ResolverConfiguration
 import java.net.InetSocketAddress
 import scala.jdk.CollectionConverters._
 
-object Shovel extends CommandIOApp(name = "shovel", header = "") {
+object Shovel extends CommandIOApp(name = "shovel", header = ""):
 
   val nameOpts: Opts[String] = Opts.argument[String]("name")
 
@@ -44,11 +44,10 @@ object Shovel extends CommandIOApp(name = "shovel", header = "") {
   def systemServers[F[_]: Sync](resolverConfiguration: ResolverConfiguration): F[List[InetSocketAddress]] =
     Sync[F].delay(resolverConfiguration.nameservers().asScala.toList.map(s => new InetSocketAddress(s, 53)))
 
-  def query(server: InetSocketAddress, name: String): DnsPacket = {
+  def query(server: InetSocketAddress, name: String): DnsPacket =
     val question = DnsQuestion(name, DnsRecordType.A, unicastResponse = false, DnsRecordClass.Internet)
     val message  = DnsMessage.query(id = 1, questions = Seq(question))
     DnsPacket(server, message)
-  }
 
   override def main: Opts[IO[ExitCode]] = nameOpts.map { name =>
     val resources = for {
@@ -56,16 +55,16 @@ object Shovel extends CommandIOApp(name = "shovel", header = "") {
       socket   <- Network[IO].openDatagramSocket()
     } yield (resolver, socket)
 
-    resources.use {
-      case (resolver, socket) =>
-        for {
-          servers <- systemServers[IO](resolver)
-          response <- servers.foldLeft(IO.raiseError[DnsPacket](new Exception("No DNS server provided"))) {
-            case (result, server) => result.orElse(Dns.resolve(socket, query(server, name)))
-          }
-          _ <- IO(println("Got answer:"))
-          _ <- IO(println(response.show))
-        } yield ExitCode.Success
+    resources.use { case (resolver, socket) =>
+      for {
+        servers <- systemServers[IO](resolver)
+        response <- servers.foldLeft(IO.raiseError[DnsPacket](new Exception("No DNS server provided"))) {
+          case (result, server) => result.orElse(Dns.resolve(socket, query(server, name)))
+        }
+        _ <- IO(println("Got answer:"))
+        _ <- IO(println(response.show))
+      } yield ExitCode.Success
     }
   }
-}
+
+end Shovel

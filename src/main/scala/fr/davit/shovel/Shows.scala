@@ -23,7 +23,7 @@ import fr.davit.taxonomy.model.record._
 
 import java.net.InetSocketAddress
 
-object Shows {
+object Shows:
 
   implicit val showHeader: Show[DnsHeader] = Show.show { header =>
     import header._
@@ -63,15 +63,14 @@ object Shows {
     s"$name\t${ttl.toSeconds}\t${`class`.show}\t${data.`type`.show}\t${data.show}"
   }
 
-  def header(message: DnsMessage): String = {
+  def header(message: DnsMessage): String =
     message.header.show ++
       s", QUERY: ${message.questions.size}" +
       s", ANSWER: ${message.answers.size}" +
       s", AUTHORITY: ${message.authorities.size}" +
       s", ADDITIONAL: ${message.additionals.size}\n\n"
-  }
 
-  def question(questions: Seq[DnsQuestion]): String = {
+  def question(questions: Seq[DnsQuestion]): String =
     if (questions.isEmpty) {
       ""
     } else {
@@ -79,9 +78,8 @@ object Shows {
         .map(r => s"\t${r.show}")
         .mkString("QUESTION SECTION:\n", "\n", "\n\n")
     }
-  }
 
-  def section(name: String, records: Seq[DnsResourceRecord]): String = {
+  def section(name: String, records: Seq[DnsResourceRecord]): String =
     if (records.isEmpty) {
       ""
     } else {
@@ -89,7 +87,6 @@ object Shows {
         .map(r => s"\t${r.show}")
         .mkString(s"$name SECTION:\n", "\n", "\n\n")
     }
-  }
 
   implicit val showMessage: Show[DnsMessage] = Show.show { message =>
     header(message) +
@@ -107,4 +104,4 @@ object Shows {
     packet.message.show + s"SERVER: ${packet.address.show}\n"
   }
 
-}
+end Shows

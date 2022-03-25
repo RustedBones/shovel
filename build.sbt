@@ -2,15 +2,8 @@
 val username = "RustedBones"
 val repo     = "shovel"
 
-lazy val filterScalacOptions = { options: Seq[String] =>
-  options.filterNot { o =>
-    // get rid of value discard
-    o == "-Ywarn-value-discard" || o == "-Wvalue-discard"
-  }
-}
-
 // for sbt-github-actions
-ThisBuild / scalaVersion := "2.13.5"
+ThisBuild / scalaVersion := "3.1.1"
 ThisBuild / githubWorkflowBuild := Seq(
   WorkflowStep.Sbt(name = Some("Check project"), commands = List("scalafmtCheckAll", "headerCheckAll")),
   WorkflowStep.Sbt(name = Some("Build project"), commands = List("test"))
